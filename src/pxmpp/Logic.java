@@ -7,6 +7,7 @@ import org.jivesoftware.smack.Roster;
 import org.jivesoftware.smack.RosterEntry;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
+import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smackx.packet.VCard;
 /**
  * @author Silvestre
@@ -36,25 +37,25 @@ public class Logic  {
         {
             Scanner scan = new Scanner(System.in);
             System.out.print("Name: ");
-            String lNombre = scan.nextLine();
+            String lName = scan.nextLine();
             System.out.print("last Name: ");
-            String lApellido = scan.nextLine();
+            String llastname = scan.nextLine();
             System.out.print("User: ");
-            String lUsuario = scan.nextLine();
+            String lUserid = scan.nextLine();
             System.out.print("Password: ");
-            String lClave = scan.nextLine();
+            String lPassword = scan.nextLine();
             
             varConect = new XMPPConnection(varConfig);
             varConect.connect(); 
             AccountManager lManager = varConect.getAccountManager();
-            lManager.createAccount(lUsuario,lClave);
-           varConect.login(lUsuario, lClave);
+            lManager.createAccount(lUserid,lPassword);
+           varConect.login(lUserid, lPassword);
             
             VCard vcard = new VCard();
-            vcard.load(varConect, lUsuario + "@alumchat.xyz");
-            vcard.setFirstName(lNombre);
-            vcard.setLastName(lApellido);
-            vcard.setEmailHome(lUsuario + "@alumchat.xyz");
+            vcard.load(varConect, lUserid + "@alumchat.xyz");
+            vcard.setFirstName(lName);
+            vcard.setLastName(llastname);
+            vcard.setEmailHome(lUserid + "@alumchat.xyz");
             vcard.save(varConect);
             
             System.out.println("account successfully created.");
@@ -72,12 +73,12 @@ public class Logic  {
         {
             Scanner scan = new Scanner(System.in);
             System.out.print("User id: ");
-            String lUsuario = scan.nextLine();
+            String lUser = scan.nextLine();
             System.out.print("Password: ");
-            String lClave = scan.nextLine();
+            String lPassword = scan.nextLine();
             varConect = new XMPPConnection(varConfig);
             varConect.connect(); 
-            varConect.login(lUsuario, lClave);
+            varConect.login(lUser, lPassword);
             System.out.println("Login sucessfully.");
         }
         catch(Exception ex)
@@ -120,7 +121,7 @@ public class Logic  {
        
     //end Adminstration, creation, login, logout and delete account
     
-     //begin  Show Users
+     //begin  Show Users, AddUsers and ShowInformationContact
      
        public static void ShowUsers()
     {
@@ -136,26 +137,70 @@ public class Logic  {
     {
         Scanner scan = new Scanner(System.in);
         System.out.print("User id to add: ");
-        String lContacto = scan.nextLine();
+        String lUserid = scan.nextLine();
         
         try
         {
             Roster.setDefaultSubscriptionMode(Roster.SubscriptionMode.manual);
             Roster roster = varConect.getRoster();
 
-            if (!roster.contains(lContacto)) {
-                roster.createEntry(lContacto + "@alumchat.xyz", lContacto, new String[] { "Friends" });
+            if (!roster.contains(lUserid)) {
+                roster.createEntry(lUserid + "@alumchat.xyz", lUserid, new String[] { "Friends" });
             } else {
                 System.out.println("User already in your list of friends.");
             }
         }
         catch(XMPPException ex)
         {
-            System.out.println("Account does exist or already in your list of friends, details: " + ex.getMessage());
+            System.out.println("Account does exist or already in your list of friends, more details: " + ex.getMessage());
         }
     }
-       
-     //end Show Users
+        
+          public static void ShowInformationContact()
+    {
+        try
+        {
+            Scanner scan = new Scanner(System.in);
+            System.out.print("User id : ");
+            String lUserid = scan.nextLine() + "@alumchat.xyz";
+            
+            VCard card = new VCard();
+            card.load(varConect, lUserid);
+            System.out.println("First Name: " + card.getFirstName());
+            System.out.println("Last Name: " + card.getLastName());
+            System.out.println("Email: " + card.getEmailHome());
+            
+            Roster roster = varConect.getRoster();
+            Collection<RosterEntry> entries = roster.getEntries();
+            for (RosterEntry entry : entries) {
+                if (entry.getUser().equals(lUserid))
+                {
+                    System.out.println("User: " + entry.getUser());
+                    System.out.println("State: " + entry.getStatus());
+                    System.out.println("Presence: " + roster.getPresence(lUserid));
+                }
+            }
+         }
+        catch (Exception ex)
+        {
+                System.out.println("Server Error or user does not exist, more details: " + ex.getMessage());
+        }
+    }
+     //end Show Users, AddUsers and ShowInformationContact
+          
+          //begin Messageofpresence and chats
+          
+           public static void SetMessageofpresence()
+    {
+        Scanner scan = new Scanner(System.in);
+        System.out.println("Message of presence: ");
+        String lPresenceM = scan.nextLine();
+        
+        Presence lPresence = new Presence(Presence.Type.available);
+        lPresence.setStatus(lPresenceM);
+        varConect.sendPacket(lPresence);
+    }
+          //end Messageofpresence and chats
     
     
 }// End Logic
