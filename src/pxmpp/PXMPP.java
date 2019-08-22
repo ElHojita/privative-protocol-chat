@@ -16,7 +16,7 @@ public class PXMPP {
            System.out.println("1. sign up 1");
            System.out.println("2. log in 2");
            System.out.println("3. log out 3");
-           System.out.println("4. Salir");
+           System.out.println("4. Finish");
             
            System.out.println("Select Option");
            option = sn.nextInt();
