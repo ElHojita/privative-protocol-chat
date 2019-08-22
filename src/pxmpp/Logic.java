@@ -25,7 +25,7 @@ public class Logic  {
     }
     //end Conection, configuration and status
     //begin Adminstration, creation, login, logout and delete account
-    public static void RegisterAccount()
+    public static void FRegisterAccount()
     {
         try
         {
@@ -60,7 +60,43 @@ public class Logic  {
               System.out.println("Server error or account already in server.");
         }
     }
+    
+      public static void FLogin()
+    {
+        try
+        {
+            Scanner scan = new Scanner(System.in);
+            System.out.print("User id: ");
+            String lUsuario = scan.nextLine();
+            System.out.print("Password: ");
+            String lClave = scan.nextLine();
+            varConect = new XMPPConnection(varConfig);
+            varConect.connect(); 
+            varConect.login(lUsuario, lClave);
+            System.out.println("Login sucessfully.");
+        }
+        catch(Exception ex)
+        {
+            System.out.println("Password incorrect or account does not exist.");
+            //ex.printStackTrace();
+        }
+    }
+    
+       public static void FLogout()
+    { try   {
+            varConect.disconnect();
+            varConect = null;
+            System.out.println("logout complete.");
+        }
+        catch(Exception ex)
+        {
+            //ex.printStackTrace();
+            System.out.println("Server error or session is already over.");
+        }
+    }
     //end Adminstration, creation, login, logout and delete account
+    
+     
     
     
 }// End Logic
