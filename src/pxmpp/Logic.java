@@ -11,6 +11,7 @@ public class Logic  {
     public static ConnectionConfiguration varConfig = null;
     public static XMPPConnection varConect = null;   
     
+    
     //begin Conection, configuration and status
         public static void ConfiConection ()
     {
@@ -78,7 +79,7 @@ public class Logic  {
         catch(Exception ex)
         {
             System.out.println("Password incorrect or account does not exist.");
-            //ex.printStackTrace();
+            ex.printStackTrace();
         }
     }
     
@@ -94,6 +95,24 @@ public class Logic  {
             System.out.println("Server error or session is already over.");
         }
     }
+     
+     public static void FDeleteAccount()
+    {
+        try
+        {
+            AccountManager lManager = varConect.getAccountManager();
+            lManager.deleteAccount();
+            varConect.disconnect();
+            varConect = null;
+            
+            System.out.println("Account deleted successfully.");
+        }
+        catch(Exception ex)
+        {
+            ex.printStackTrace();
+        }
+    }   
+       
     //end Adminstration, creation, login, logout and delete account
     
      
