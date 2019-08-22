@@ -109,11 +109,12 @@ public class Logic  {
             varConect.disconnect();
             varConect = null;
             
-            System.out.println("Account deleted successfully, more details: " + ex.getMessage());
+            System.out.println("Account deleted successfully");
         }
         catch(Exception ex)
         {
-            ex.printStackTrace();
+            System.out.println("Server error or account already deleted, more details: " + ex.getMessage());
+            
         }
     }   
        
