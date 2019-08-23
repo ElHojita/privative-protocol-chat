@@ -2,11 +2,15 @@ package pxmpp;
 import java.util.Collection;
 import java.util.Scanner;
 import org.jivesoftware.smack.AccountManager;
+import org.jivesoftware.smack.Chat;
+import org.jivesoftware.smack.ChatManager;
 import org.jivesoftware.smack.ConnectionConfiguration;
+import org.jivesoftware.smack.MessageListener;
 import org.jivesoftware.smack.Roster;
 import org.jivesoftware.smack.RosterEntry;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
+import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smackx.packet.VCard;
 /**
@@ -15,7 +19,12 @@ import org.jivesoftware.smackx.packet.VCard;
 public class Logic  {
     public static ConnectionConfiguration varConfig = null;
     public static XMPPConnection varConect = null;   
-    
+    public static final String ANSI_RED = "\u001B[31m";
+    public static final String ANSI_RESET = "\u001B[0m";
+    public static final String ANSI_GREEN = "\u001B[32m";
+    public static final String ANSI_YELLOW = "\u001B[33m";
+    public static final String ANSI_BLUE = "\u001B[34m";
+    public static final String ANSI_BLACK = "\u001B[30m";
     
     //begin Conection, configuration and status
         public static void ConfiConection ()
@@ -38,8 +47,8 @@ public class Logic  {
             Scanner scan = new Scanner(System.in);
             System.out.print("Name: ");
             String lName = scan.nextLine();
-            System.out.print("last Name: ");
-            String llastname = scan.nextLine();
+           // System.out.print("last Name: ");
+           // String llastname = scan.nextLine();
             System.out.print("User: ");
             String lUserid = scan.nextLine();
             System.out.print("Password: ");
@@ -54,7 +63,7 @@ public class Logic  {
             VCard vcard = new VCard();
             vcard.load(varConect, lUserid + "@alumchat.xyz");
             vcard.setFirstName(lName);
-            vcard.setLastName(llastname);
+            //vcard.setLastName(llastname);
             vcard.setEmailHome(lUserid + "@alumchat.xyz");
             vcard.save(varConect);
             
@@ -168,7 +177,7 @@ public class Logic  {
             card.load(varConect, lUserid);
             System.out.println("First Name: " + card.getFirstName());
             System.out.println("Last Name: " + card.getLastName());
-            System.out.println("Email: " + card.getEmailHome());
+            //System.out.println("Email: " + card.getEmailHome());
             
             Roster roster = varConect.getRoster();
             Collection<RosterEntry> entries = roster.getEntries();
@@ -188,7 +197,7 @@ public class Logic  {
     }
      //end Show Users, AddUsers and ShowInformationContact
           
-          //begin Messageofpresence and chats
+          //begin Messageofpresence
           
            public static void SetMessageofpresence()
     {
@@ -200,7 +209,47 @@ public class Logic  {
         lPresence.setStatus(lPresenceM);
         varConect.sendPacket(lPresence);
     }
-          //end Messageofpresence and chats
-    
+           
+          //end Messageofpresence
+           
+           
+           //begin chats
+             public static void sendMessage()
+    {
+        Scanner scan = new Scanner(System.in);
+        System.out.print("User id to send message: ");
+        String lUser = scan.nextLine() + "@alumchat.xyz";
+                try{ 
+                    Thread.sleep(50);
+                    ChatManager chatManager = varConect.getChatManager();
+                    Chat chat = chatManager.createChat(lUser, new MessageListener() {
+                    @Override
+                        public void processMessage(Chat chat, Message msg) {
+                             
+                            String from = msg.getFrom();
+                            String body = msg.getBody();
+                            System.out.println("");
+                            System.out.println(String.format(""+from+": '%1$s'", body,"\\n"));
+                           // System.out.println(String.format(ANSI_GREEN+""+from+": '%1$s'", body,"\\n"+ANSI_BLACK));
+                        }
+                    });
+                    String lMessage = "";
+                     
+                    while(lMessage.equalsIgnoreCase("adios") == false )
+                    {
+                        Thread.sleep(50);
+                        System.out.print(""+varConect.getUser()+": ");
+                        lMessage = scan.nextLine();
+                        //System.out.println(ANSI_RED + "Texto de color rojo" + ANSI_RESET);
+                        System.out.println("Sending mesage");
+                        //System.out.println(String.format("Sending mesage '%1$s' to user %2$s", lMensaje, lContacto.replace("alumchat.xyz","")));
+                        chat.sendMessage(lMessage);
+                    }
+                }catch(Exception e){
+                       System.out.print("Server error or acccount does not exist, more details: " + e.getMessage());
+                } 
+    }
+           //end chats
+
     
 }// End Logic
