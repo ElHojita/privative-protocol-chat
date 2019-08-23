@@ -1,5 +1,6 @@
 package pxmpp;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Scanner;
 import org.jivesoftware.smack.AccountManager;
@@ -14,6 +15,7 @@ import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smackx.muc.MultiUserChat;
+
 import java.util.ArrayList;
 import java.util.List;
 import org.jivesoftware.smack.PacketCollector;
@@ -33,12 +35,10 @@ public class Logic {
     public static final String ANSI_YELLOW = "\u001B[33m";
     public static final String ANSI_BLUE = "\u001B[34m";
     public static final String ANSI_BLACK = "\u001B[30m";
-
-    // Group chat (can be null)
+    public static String Duser ="";
     protected static List<MultiUserChat> chatRooms = null;
-    // Packet collector (can be null)
     protected static PacketCollector packetCollector = null;
-
+    
     //begin Conection, configuration and status
     public static void ConfiConection() {
         varConfig = new ConnectionConfiguration("alumchat.xyz", 5222);
@@ -58,8 +58,6 @@ public class Logic {
             Scanner scan = new Scanner(System.in);
             System.out.print("Name: ");
             String lName = scan.nextLine();
-            // System.out.print("last Name: ");
-            // String llastname = scan.nextLine();
             System.out.print("User: ");
             String lUserid = scan.nextLine();
             System.out.print("Password: ");
@@ -74,19 +72,21 @@ public class Logic {
             VCard vcard = new VCard();
             vcard.load(varConect, lUserid + "@alumchat.xyz");
             vcard.setFirstName(lName);
-            //vcard.setLastName(llastname);
             vcard.setEmailHome(lUserid + "@alumchat.xyz");
             vcard.save(varConect);
 
             System.out.println("account successfully created.");
+            
         } catch (Exception ex) {
             //ex.printStackTrace();// this capture the exception, but in this case print the follow mensaje.
             System.out.println("Server error or account already in server, more details: " + ex.getMessage());
         }
+     
     }
 
     public static void FLogin() {
         try {
+            
             Scanner scan = new Scanner(System.in);
             System.out.print("User id: ");
             String lUser = scan.nextLine();
@@ -96,9 +96,11 @@ public class Logic {
             varConect.connect();
             varConect.login(lUser, lPassword);
             System.out.println("Login sucessfully.");
+            Duser= lUser;
         } catch (Exception ex) {
+            //ex.printStackTrace();// this capture the exception, but in this case print the follow mensaje.
             System.out.println("Password incorrect or account does not exist, more details: " + ex.getMessage());
-            //ex.printStackTrace();
+            
         }
     }
 
@@ -107,34 +109,38 @@ public class Logic {
             varConect.disconnect();
             varConect = null;
             System.out.println("logout complete.");
+            Duser="";
         } catch (Exception ex) {
-            //ex.printStackTrace();
+            //ex.printStackTrace();// this capture the exception, but in this case print the follow mensaje.
             System.out.println("Server error or session is already over, more details: " + ex.getMessage());
         }
     }
 
     public static void FDeleteAccount() {
-        try {
+       
+        
+         try {
             AccountManager lManager = varConect.getAccountManager();
+            
             lManager.deleteAccount();
             varConect.disconnect();
             varConect = null;
-
+            Duser="";
             System.out.println("Account deleted successfully");
-        } catch (Exception ex) {
-            System.out.println("Server error or account already deleted, more details: " + ex.getMessage());
-
         }
+         catch (XMPPException ex) {
+            System.out.println("Server error or account already deleted, more details: " + ex.getMessage());
+        }      
     }
-
     //end Adminstration, creation, login, logout and delete account
+    
     //begin  Show Users, AddUsers and ShowInformationContact
     public static void ShowUsers() {
         Roster roster = varConect.getRoster();
         Collection<RosterEntry> entries = roster.getEntries();
-        System.out.println("User \t\t Status");
+        System.out.println("Name                        User                        ");
         for (RosterEntry entry : entries) {
-            System.out.println(entry.getName() + " t\t " + entry.getStatus());
+            System.out.println(entry.getName() + "                        " + entry.getUser()+"                        ");
         }
     }
 
@@ -167,8 +173,7 @@ public class Logic {
             card.load(varConect, lUserid);
             System.out.println("First Name: " + card.getFirstName());
             System.out.println("Last Name: " + card.getLastName());
-            //System.out.println("Email: " + card.getEmailHome());
-
+            System.out.println("Email: " + card.getEmailHome());
             Roster roster = varConect.getRoster();
             Collection<RosterEntry> entries = roster.getEntries();
             for (RosterEntry entry : entries) {
@@ -196,12 +201,15 @@ public class Logic {
     }
 
     //end Messageofpresence
+    
     //begin chats
     public static void sendMessage() {
         Scanner scan = new Scanner(System.in);
         System.out.print("User id to send message: ");
         String lUser = scan.nextLine() + "@alumchat.xyz";
+        
         try {
+            GLogic.ListenerMessage(varConect, lUser, lUser, null);
             Thread.sleep(50);
             ChatManager chatManager = varConect.getChatManager();
             Chat chat = chatManager.createChat(lUser, new MessageListener() {
@@ -212,16 +220,15 @@ public class Logic {
                     String body = msg.getBody();
                     System.out.println("");
                     System.out.println(String.format("" + from + ": '%1$s'", body, "\\n"));
+                    System.out.print("                             " + varConect.getUser() + ": ");
                 }
             });
             String lMessage = "";
 
             while (lMessage.equalsIgnoreCase("adios") == false) {
                 Thread.sleep(50);
-                System.out.print("" + varConect.getUser() + ": ");
+                System.out.print("                             " + varConect.getUser() + ": ");
                 lMessage = scan.nextLine();
-                //System.out.println(ANSI_RED + "Sending mesage" + ANSI_RESET);
-                System.out.println("Sending mesage");
                 chat.sendMessage(lMessage);
             }
         } catch (Exception e) {
@@ -241,30 +248,31 @@ public class Logic {
             try {
                 chatRooms.get(0).join(varConect.getUser());
             } catch (XMPPException e) {
-                System.err.println("Impossible to join GROUPCHAT, terminating");
+                System.err.println("Server error or not exist group");
             }
         }
     }
 
-    
-   public static  void sendPublicMessage(String body, String lGroupName) {
- 
-    MultiUserChat mucChat = (new MultiUserChat(varConect,lGroupName));
-    Message message = new Message(lGroupName);
-    //message.setStanzaId(stanzaId);
-    message.setBody(body);
-    message.setType(Message.Type.groupchat);
-    //message.addExtension(extension);
-    try {
-        mucChat.sendMessage(message);
-        if (mucChat != null) {
-            mucChat.sendMessage(message);
-        }
-    } catch (Exception ex) {
-        
-    }
-}
+   public static  void SendMessageGroup( ) {
+       Scanner scan = new Scanner(System.in);
+       System.out.print("Name of Group: ");
+       String lgroup = scan.nextLine();
+       System.out.print("Message: ");
+       String lMessage = scan.nextLine();
+       MultiUserChat mucChat = (new MultiUserChat(varConect, lgroup));
+       Message message = new Message(lgroup);
+       //message.setStanzaId(stanzaId);
+       message.setBody(lMessage);
+       message.setType(Message.Type.groupchat);
+       //message.addExtension(extension);
+       try {
+           mucChat.sendMessage(message);
+           if (mucChat != null) {
+               mucChat.sendMessage(message);
+           }
+       } catch (Exception ex) {
 
-    //begin groups messages and join
-   
+       }
+}
+    //end groups messages and join
 }// End Logic
