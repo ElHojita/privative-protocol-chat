@@ -10,31 +10,39 @@ public class PXMPP extends GLogic {
 
     public static void main(String[] args)throws XMPPException {
        Logic.ConfiConection();
-       Scanner sn = new Scanner(System.in);
-       boolean end = false;
-       int option; 
-        
+        Scanner sn = new Scanner(System.in);
+        String log="";
+        boolean end = false;
+
+        int option;
+        if (Logic.Duser != ""){
+        Logic.Duser= "Bienvenido "+Logic.Duser;
+        }
+
        while(!end){
-          
-           System.out.println(" Management of account. ");
+           System.out.println("");
+           System.out.println("");
+           System.out.println(" Management of account. " + Logic.Duser);
            System.out.println("1. sign up. ");
            System.out.println("2. log in. ");
            System.out.println("3. log out. ");
            System.out.println("4. Delete account. ");
-           System.out.println(" Comunicación ");
-           System.out.println("5. Mostrar todos los usuarios/contactos y su estado.");
-           System.out.println("6.Agregar un usuario a los contactos.");
-           System.out.println("7. Mostrar detalles de contacto de un usuario");
-           System.out.println("8. Comunicación 1 a 1 con cualquier usuario/contacto. ");
-           System.out.println("9. Participar en conversaciones grupales.");
-           System.out.println("10. Definir mensaje de presencia. ");
-           System.out.println("11. Enviar/recibir notificaciones. ");
-           System.out.println("12. Enviar/recibir archivos. ");
+           System.out.println(" Communication ");
+           System.out.println("5. Show all Users.");
+           System.out.println("6. Add users.");
+           System.out.println("7. Details about one contact");
+           System.out.println("8. Chat (peer to peer). ");
+           System.out.println("9. Multi chat (group chat).");
+           System.out.println("10. Set message of presence. ");
+           System.out.println("11. Send/receive notifications. ");
+           System.out.println("12. Send/receive files. ");
            System.out.println("13. Finish");
+           System.out.println("Log of options: "+log+",");
             
            System.out.println("Select Option:");
            option = sn.nextInt();
-            
+           System.out.println("");
+            log= log+""+Integer.toString(option)+"";
        
            
            
@@ -65,7 +73,7 @@ public class PXMPP extends GLogic {
                    break;
                    case 9:
                    //Logic.JoinGroup();
-                       Logic.sendPublicMessage("Prueba Enviar mensaje","Groupo1");
+                   Logic.sendPublicMessage();
                    break;
                    case 10:
                    Logic.SetMessageofpresence();
