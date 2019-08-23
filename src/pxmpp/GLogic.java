@@ -15,6 +15,18 @@ import static pxmpp.Logic.varConect;
  * @author Silvestre
  */
 public  class GLogic {
+    /*
+    *
+    *
+    *This class is a future projection for the group menu and they management.
+    *
+    *WARNING, is incomplete
+    *
+    *
+    *
+    *
+    */
+    
     
     private XMPPConnection connection;
     private String room;
