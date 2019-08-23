@@ -1,8 +1,9 @@
 package pxmpp;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Scanner;
+import java.util.ArrayList;
+import java.util.List;
 import org.jivesoftware.smack.AccountManager;
 import org.jivesoftware.smack.Chat;
 import org.jivesoftware.smack.ChatManager;
@@ -15,31 +16,25 @@ import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smackx.muc.MultiUserChat;
-
-import java.util.ArrayList;
-import java.util.List;
-import org.jivesoftware.smack.PacketCollector;
-
 import org.jivesoftware.smackx.packet.VCard;
 
+///the libraries make reference to smack 3.1.0 - 3.2.0
+// thats libraries have this format org.jivesoftware.smack.. or org.jivesoftware.smackx..
 /**
  * @author Silvestre
  */
 public class Logic {
 
-    public static ConnectionConfiguration varConfig = null;
-    public static XMPPConnection varConect = null;
-    public static final String ANSI_RED = "\u001B[31m";
-    public static final String ANSI_RESET = "\u001B[0m";
-    public static final String ANSI_GREEN = "\u001B[32m";
-    public static final String ANSI_YELLOW = "\u001B[33m";
-    public static final String ANSI_BLUE = "\u001B[34m";
-    public static final String ANSI_BLACK = "\u001B[30m";
-    public static String Duser ="";
-    protected static List<MultiUserChat> chatRooms = null;
-    protected static PacketCollector packetCollector = null;
-    
-    //begin Conection, configuration and status
+    public static ConnectionConfiguration varConfig = null; // var for the config global, contains server, port and securitymode
+    public static XMPPConnection varConect = null; // var for the conection.
+    public static final String ANSI_RED = "\u001B[31m"; // Color
+    public static final String ANSI_BLACK = "\u001B[30m"; // Color
+    public static String Duser = "";   // To management in the menu the IDuser
+    protected static List<MultiUserChat> chatRooms = null; //to get the groups
+
+    // This method add configuration data.
+    //SASLAuthentication has not been activated in this method, because smack 3.1.0 has a fatal error with SASLAuthentication
+    //This method only need conectionconfiguration and Set security mode to work
     public static void ConfiConection() {
         varConfig = new ConnectionConfiguration("alumchat.xyz", 5222);
         varConfig.setSecurityMode(ConnectionConfiguration.SecurityMode.disabled);
@@ -47,12 +42,12 @@ public class Logic {
         varConfig.setSendPresence(true);
     }
 
+    //This method valid if the conection is on
     public static boolean Isonline() {
         return (varConect != null && varConect.isConnected());
     }
 
-    //end Conection, configuration and status
-    //begin Adminstration, creation, login, logout and delete account
+    //This method register account in server xmpp (Alumchat.xyz) if you wish change server xmpp only modify the method ConfiConection
     public static void FRegisterAccount() {
         try {
             Scanner scan = new Scanner(System.in);
@@ -65,28 +60,29 @@ public class Logic {
 
             varConect = new XMPPConnection(varConfig);
             varConect.connect();
-            AccountManager lManager = varConect.getAccountManager();
-            lManager.createAccount(lUserid, lPassword);
+            AccountManager lManager = varConect.getAccountManager(); // Account manager belongs to librarie org.jivesoftware.smack.AccountManager on smack 3.1.0
+            lManager.createAccount(lUserid, lPassword);              // works for the management around of the user
             varConect.login(lUserid, lPassword);
 
-            VCard vcard = new VCard();
-            vcard.load(varConect, lUserid + "@alumchat.xyz");
+            VCard vcard = new VCard();                        // VCard belongs to librarie org.jivesoftware.smackx.packet.VCard;
+            vcard.load(varConect, lUserid + "@alumchat.xyz"); //works for the creating datas for the new user
             vcard.setFirstName(lName);
             vcard.setEmailHome(lUserid + "@alumchat.xyz");
             vcard.save(varConect);
 
             System.out.println("account successfully created.");
-            
+
         } catch (Exception ex) {
             //ex.printStackTrace();// this capture the exception, but in this case print the follow mensaje.
             System.out.println("Server error or account already in server, more details: " + ex.getMessage());
         }
-     
+
     }
 
+    //This method login in server xmpp (Alumchat.xyz) if you wish change server xmpp only modify the method ConfiConection
     public static void FLogin() {
         try {
-            
+
             Scanner scan = new Scanner(System.in);
             System.out.print("User id: ");
             String lUser = scan.nextLine();
@@ -96,54 +92,54 @@ public class Logic {
             varConect.connect();
             varConect.login(lUser, lPassword);
             System.out.println("Login sucessfully.");
-            Duser= lUser;
+            Duser = lUser;
         } catch (Exception ex) {
             //ex.printStackTrace();// this capture the exception, but in this case print the follow mensaje.
             System.out.println("Password incorrect or account does not exist, more details: " + ex.getMessage());
-            
+
         }
     }
 
+    //This method logout in server xmpp (Alumchat.xyz) if you wish change server xmpp only modify the method ConfiConection
     public static void FLogout() {
         try {
             varConect.disconnect();
             varConect = null;
             System.out.println("logout complete.");
-            Duser="";
+            Duser = ""; // for the management message in the menu, review Method Menu
         } catch (Exception ex) {
             //ex.printStackTrace();// this capture the exception, but in this case print the follow mensaje.
             System.out.println("Server error or session is already over, more details: " + ex.getMessage());
         }
     }
 
+    //This method delete Accounts in server xmpp (Alumchat.xyz) if you wish change server xmpp only modify the method ConfiConection
     public static void FDeleteAccount() {
-       
-        
-         try {
+
+        try {
             AccountManager lManager = varConect.getAccountManager();
-            
+
             lManager.deleteAccount();
             varConect.disconnect();
             varConect = null;
-            Duser="";
+            Duser = ""; // for the management message in the menu, review Method Menu
             System.out.println("Account deleted successfully");
-        }
-         catch (XMPPException ex) {
+        } catch (XMPPException ex) {
             System.out.println("Server error or account already deleted, more details: " + ex.getMessage());
-        }      
-    }
-    //end Adminstration, creation, login, logout and delete account
-    
-    //begin  Show Users, AddUsers and ShowInformationContact
-    public static void ShowUsers() {
-        Roster roster = varConect.getRoster();
-        Collection<RosterEntry> entries = roster.getEntries();
-        System.out.println("Name                        User                        ");
-        for (RosterEntry entry : entries) {
-            System.out.println(entry.getName() + "                        " + entry.getUser()+"                        ");
         }
     }
 
+    //This method shows your list of friends
+    public static void ShowUsers() {
+        Roster roster = varConect.getRoster(); // Roster belongs to librarie org.jivesoftware.smackx.Roster;
+        Collection<RosterEntry> entries = roster.getEntries(); // Get the users in your friends list
+        System.out.println("Name                        User                        ");
+        for (RosterEntry entry : entries) {
+            System.out.println(entry.getName() + "                        " + entry.getUser() + "                        ");
+        }
+    }
+
+    //this method permits that you added new friends
     public static void addUsers() {
         Scanner scan = new Scanner(System.in);
         System.out.print("User id to add: ");
@@ -163,6 +159,7 @@ public class Logic {
         }
     }
 
+    //This method shows an especific friend
     public static void ShowInformationContact() {
         try {
             Scanner scan = new Scanner(System.in);
@@ -187,34 +184,31 @@ public class Logic {
             System.out.println("Server Error or user does not exist, more details: " + ex.getMessage());
         }
     }
-    //end Show Users, AddUsers and ShowInformationContact
 
-    //begin Messageofpresence
+    // this method add a message of presence in the server xmpp
     public static void SetMessageofpresence() {
         Scanner scan = new Scanner(System.in);
         System.out.println("Message of presence: ");
         String lPresenceM = scan.nextLine();
 
-        Presence lPresence = new Presence(Presence.Type.available);
+        Presence lPresence = new Presence(Presence.Type.available); // Presence belongs to librarie org.jivesoftware.smack.packet.Presence;
         lPresence.setStatus(lPresenceM);
         varConect.sendPacket(lPresence);
     }
 
-    //end Messageofpresence
-    
-    //begin chats
+    // This method permits you chatting with your friends
     public static void sendMessage() {
         Scanner scan = new Scanner(System.in);
         System.out.print("User id to send message: ");
         String lUser = scan.nextLine() + "@alumchat.xyz";
-        
+
         try {
-            GLogic.ListenerMessage(varConect, lUser, lUser, null);
-            Thread.sleep(50);
+            GLogic.ListenerMessage(varConect, lUser, lUser, null);//Listener Class is need here because if you don't have listener, you can't get the message
+            Thread.sleep(50); // Only for the pause
             ChatManager chatManager = varConect.getChatManager();
             Chat chat = chatManager.createChat(lUser, new MessageListener() {
                 @Override
-                public void processMessage(Chat chat, Message msg) {
+                public void processMessage(Chat chat, Message msg) { // Here is the message incoming
 
                     String from = msg.getFrom();
                     String body = msg.getBody();
@@ -225,7 +219,7 @@ public class Logic {
             });
             String lMessage = "";
 
-            while (lMessage.equalsIgnoreCase("adios") == false) {
+            while (lMessage.equalsIgnoreCase("adios") == false) { // this is the escape word and here is the outgoing message
                 Thread.sleep(50);
                 System.out.print("                             " + varConect.getUser() + ": ");
                 lMessage = scan.nextLine();
@@ -235,15 +229,14 @@ public class Logic {
             System.out.print("Server error or acccount does not exist, more details: " + e.getMessage());
         }
     }
-    //end chats
 
-    //begin groups messages and join
+    //This method permits you can join in any group on the server XMPP
     public static void JoinGroup() {
         Scanner scan = new Scanner(System.in);
         System.out.print("Name of Group: ");
         String lgroup = scan.nextLine();
         if (varConect.isAuthenticated() && lgroup != null) {
-            chatRooms = new ArrayList<MultiUserChat>();
+            chatRooms = new ArrayList<MultiUserChat>(); //MultiUserChat belongs to librarie  org.jivesoftware.smackx.muc.MultiUserChat;
             chatRooms.add(new MultiUserChat(varConect, lgroup));
             try {
                 chatRooms.get(0).join(varConect.getUser());
@@ -253,26 +246,164 @@ public class Logic {
         }
     }
 
-   public static  void SendMessageGroup( ) {
-       Scanner scan = new Scanner(System.in);
-       System.out.print("Name of Group: ");
-       String lgroup = scan.nextLine();
-       System.out.print("Message: ");
-       String lMessage = scan.nextLine();
-       MultiUserChat mucChat = (new MultiUserChat(varConect, lgroup));
-       Message message = new Message(lgroup);
-       //message.setStanzaId(stanzaId);
-       message.setBody(lMessage);
-       message.setType(Message.Type.groupchat);
-       //message.addExtension(extension);
-       try {
-           mucChat.sendMessage(message);
-           if (mucChat != null) {
-               mucChat.sendMessage(message);
-           }
-       } catch (Exception ex) {
+    //This method permits send group messages
+    public static void SendMessageGroup() {
+        Scanner scan = new Scanner(System.in);
+        System.out.print("Name of Group: ");
+        String lgroup = scan.nextLine();
+        System.out.print("Message: ");
+        String lMessage = scan.nextLine();
+        MultiUserChat mucChat = (new MultiUserChat(varConect, lgroup));
+        Message message = new Message(lgroup);
+        //message.setStanzaId(stanzaId);
+        message.setBody(lMessage);
+        message.setType(Message.Type.groupchat);
+        //message.addExtension(extension);
+        try {
+            mucChat.sendMessage(message);
+            if (mucChat != null) {
+                mucChat.sendMessage(message);
+            }
+        } catch (Exception ex) {
 
-       }
-}
-    //end groups messages and join
+        }
+    }
+    //This is the menu, you can put it in the main if you wish.
+
+    public static void Menu() {
+        Logic.ConfiConection();
+        Scanner sn = new Scanner(System.in);
+        String log = "";
+        boolean end = false;
+        int option;
+        while (!end) {
+            System.out.println(" ");
+            System.out.println(" ");
+            if (Logic.Duser != "") { // in this line management the Iduser in the menu
+                System.out.println("" + Emptyspace() + "Management of account. Welcome " + Logic.Duser); // EmptySpace() is equal to blank space, its only for the style
+            } else {
+                System.out.println("" + Emptyspace() + "Management of account.");
+            }
+            System.out.println("" + Emptyspace() + "1. sign up. ");
+            System.out.println("" + Emptyspace() + "2. log in. ");
+            if (Logic.Duser != "") {
+                System.out.println("" + Emptyspace() + "3. log out. (" + Logic.Duser + ")");
+            } else {
+                System.out.println("" + Emptyspace() + "3. log out. ");
+            }
+            if (Logic.Duser != "") {
+                System.out.println("" + Emptyspace() + "4. Delete account. (" + Logic.Duser + ")");
+            } else {
+                System.out.println("" + Emptyspace() + "4. Delete account. ");
+            }
+            System.out.println("" + Emptyspace() + "   Communication ");
+            System.out.println("" + Emptyspace() + "5. Show all Users.");
+            System.out.println("" + Emptyspace() + "6. Add users.");
+            System.out.println("" + Emptyspace() + "7. Details about one contact");
+            System.out.println("" + Emptyspace() + "8. Chat (peer to peer). ");
+            System.out.println("" + Emptyspace() + "9. Multi chat (group chat).");
+            System.out.println("" + Emptyspace() + "10. Set message of presence. ");
+            System.out.println("" + Emptyspace() + "11. Send/receive notifications. ");
+            System.out.println("" + Emptyspace() + "12. Send/receive files. ");
+            System.out.println("" + Emptyspace() + "13. Finish");
+            System.out.println("" + Emptyspace() + "Log of options: " + log + "");
+            System.out.print("\033[31m Select Option:"); // \033[31m Is code for color red, in cmd does not work
+            option = sn.nextInt();
+            System.out.println("");
+            log = log + "" + Integer.toString(option) + ","; // This line add a log for the option select for the user
+
+            switch (option) {
+                case 1:
+                    Logic.FRegisterAccount();
+
+                    break;
+                case 2:
+                    Logic.FLogin();
+                    break;
+                case 3:
+                    Logic.FLogout();
+                    break;
+                case 4:
+                    if (Logic.Duser != "") { //in this line added a validation if the user have a login successfully
+                        Logic.FDeleteAccount();
+                    } else {
+                        System.out.println(ErrorMenu()); // Error menu equal to No sesion to start operation
+                    }
+                    break;
+                case 5:
+                    if (Logic.Duser != "") {
+                        Logic.ShowUsers();
+                    } else {
+                        System.out.println(ErrorMenu());
+                    }
+                    break;
+                case 6:
+                    if (Logic.Duser != "") {
+                        Logic.addUsers();
+                    } else {
+                        System.out.println(ErrorMenu());
+                    }
+                    break;
+                case 7:
+                    if (Logic.Duser != "") {
+                        Logic.ShowInformationContact();
+                    } else {
+                        System.out.println(ErrorMenu());
+                    }
+                    break;
+                case 8:
+                    if (Logic.Duser != "") {
+                        Logic.sendMessage();
+                    } else {
+                        System.out.println(ErrorMenu());
+                    }
+                    break;
+                case 9:
+                    //Logic.JoinGroup();
+                    if (Logic.Duser != "") {
+                        Logic.SendMessageGroup();
+                    } else {
+                        System.out.println(ErrorMenu());
+                    }
+                    break;
+                case 10:
+
+                    if (Logic.Duser != "") {
+                        Logic.SetMessageofpresence();
+                    } else {
+                        System.out.println(ErrorMenu());
+                    }
+                    break;
+                case 11:
+                    break;
+                case 12:
+                    break;
+                case 13:
+                    end = true;
+                    break;
+                default:
+                    System.out.println("options only between one to thirteen. ");
+            }
+        }
+    }
+
+    //this method generates a validation of the other methos works correctly
+    public static /*Class<?>*/ void Validationsesion(Class<?> Obj) { //Validation Methods
+        if (Logic.Duser != "") {
+            Obj.cast(Obj);
+        } else {
+            Obj.cast(ErrorMenu());
+        }
+    }
+
+    //Message Error
+    public static String ErrorMenu() {
+        return "No sesion to start operation";
+    }
+    //Blank space
+
+    public static String Emptyspace() {
+        return "                                    ";
+    }
+
 }// End Logic
