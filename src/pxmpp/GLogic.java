@@ -6,7 +6,6 @@ import org.jivesoftware.smack.filter.*;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.PacketCollector;
-
 import java.util.*;
 import org.jivesoftware.smack.PacketListener;
 import org.jivesoftware.smack.Roster;
@@ -30,18 +29,15 @@ public  class GLogic {
     
     public   void GroupChat(XMPPConnection connection, String room) {
         this.room = room;
-        // Create a collector for all incoming messages.
         messageFilter = new AndFilter(new FromContainsFilter(room),
                 new PacketTypeFilter(Message.class));
         messageFilter = new AndFilter(messageFilter, new PacketFilter() {
             public boolean accept(Packet packet) {
                 Message msg = (Message)packet;
                 return msg.getType() == Message.Type.groupchat;
-                //return msg.getType() == Message.Type.GROUP_CHAT;
             }
         });
         messageCollector = varConect.createPacketCollector(messageFilter);
-        // Create a listener for all presence updates.
         presenceFilter = new AndFilter(new FromContainsFilter(room),
                 new PacketTypeFilter(Presence.class));
         varConect.addPacketListener(new PacketListener() {
@@ -76,23 +72,19 @@ public  class GLogic {
         if (nickname == null || nickname.equals("")) {
             throw new IllegalArgumentException("Nickname must not be null or blank.");
         }
-        // If we've already joined the room, leave it before joining under a new
-        // nickname.
+
         if (joined) {
             leave();
         }
-        // We join a room by sending a presence packet where the "to"
-        // field is in the form "roomName@service/nickname"
+
         Presence joinPresence = new Presence(Presence.Type.available);
         joinPresence.setTo(room + "/" + nickname);
-        // Wait for a presence packet back from the server.
+
         PacketFilter responseFilter = new AndFilter(
                 new FromContainsFilter(room + "/" + nickname),
                 new PacketTypeFilter(Presence.class));
         PacketCollector response = varConect.createPacketCollector(responseFilter);
-        // Send join packet.
         varConect.sendPacket(joinPresence);
-        // Wait up to a certain number of seconds for a reply.
         Presence presence = (Presence)response.nextResult(timeout);
         response.cancel();
         if (presence == null) {
@@ -118,7 +110,6 @@ public  class GLogic {
         Presence leavePresence = new Presence(Presence.Type.unavailable);
         leavePresence.setTo(room + "/" + nickname);
         varConect.sendPacket(leavePresence);
-        // Reset participant information.
         participants = new ArrayList();
         nickname = null;
         joined = false;
